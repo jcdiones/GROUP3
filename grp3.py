@@ -1,43 +1,32 @@
-import requests
+import os
+import sqlite3
+import socket
 import tkinter as tk
+import time
+from cryptography.fernet import Fernet
 
-# Create the main window
-root = tk.Tk()
-root.title("Public IP Information")
+# Generate a key for encryption
+key = Fernet.generate_key()
+cipher_suite = Fernet(key)
 
-# Define functions
-def get_ip_info():
-    # Retrieve and process IP information as before
-    try:
-        response = requests.get(url)
-        if response.status_code == 200:
-            data = response.json()
-            ip_v4 = data["ip"]
-            ip_v6 = data.get("ipv6", "N/A")
-            update_labels(ip_v4, ip_v6)
-        else:
-            update_labels("Error", "Error")
-    except requests.exceptions.RequestException as e:
-        update_labels("Error", f"Error: {e}")
+# Encrypt function
+def encrypt_data(data):
+    return cipher_suite.encrypt(data.encode()).decode()
 
-def update_labels(ip_v4, ip_v6):
-    ip_v4_label.config(text=f"IPv4: {ip_v4}")
-    ip_v6_label.config(text=f"IPv6: {ip_v6}")
+# Decrypt function
+def decrypt_data(encrypted_data):
+    return cipher_suite.decrypt(encrypted_data.encode()).decode()
 
-# API endpoint
-url = "https://api.ipify.org?format=json"
-
-# Create labels for displaying information
-ip_v4_label = tk.Label(root, text="Retrieving IPv4...")
-ip_v6_label = tk.Label(root, text="Retrieving IPv6...")
-
-# Create a button to trigger information retrieval
-get_ip_button = tk.Button(root, text="Get IP Info", command=get_ip_info)
-
-# Arrange elements in the window
-ip_v4_label.pack()
-ip_v6_label.pack()
-get_ip_button.pack()
-
-# Start the event loop to display the UI
-root.mainloop()
+# Check if the database file exists
+DATABASE_FILE = "user_database.db"
+if not os.path.exists(DATABASE_FILE):
+    # Create a new database file if it doesn't exist
+    conn = sqlite3.connect(DATABASE_FILE)
+    c = conn.cursor()
+    # Create a table named "user" with columns "username" and "password"
+    c.execute('''CREATE TABLE user
+                 (username TEXT, password TEXT)''')
+    # Insert an initial entry into the table
+    c.execute("INSERT INTO user (username, password) VALUES (?, ?)", ("admin", "ciscoenpa"))
+    conn.commit()
+    conn.close()
