@@ -55,17 +55,10 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     needs: build
-    env:
-      PRODUCTION_DB_URL: postgresql://myuser:$PRODUCTION_DB_PASSWORD@example.com/productiondb
-      STAGING_DB_URL: postgresql://myuser:$STAGING_DB_PASSWORD@staging.example.com/stagingdb
-    secrets:
-      PRODUCTION_DB_PASSWORD: ${{ secrets.PRODUCTION_DB_PASSWORD }}
-      STAGING_DB_PASSWORD: ${{ secrets.STAGING_DB_PASSWORD }}
-
     steps:
     - name: Checkout source code
       uses: actions/checkout@v2
-
+      
     - name: Setup Python
       uses: actions/setup-python@v2
       with:
@@ -87,16 +80,37 @@ jobs:
         pip install --upgrade pip
         if [[ -f requirements.txt ]]; then pip install -r requirements.txt; fi
 
-    - name: Deploy to staging
+    - name: Get deployment vars
       env:
-        DATABASE_URL: "${{ env.STAGING_DB_URL }}"
-      run: |
-        echo $DATABASE_URL
-        fab deploy_to_staging
-        
-    - name: Deploy to production
+        ENVIRONMENT: ${{ github.event.inputs.environment }}
+      run: echo ::set-output name=DEPLOYMENT_VARS::$(printenv | jq -c '.|with_entries(select(.key | startswith("DEPLOYMENT")))' | base64)
+
+    - name: Decode DEPLOYMENT_VARS
+      id: decode-deployment-vars
+      run: echo "${{ steps.get-deployment-vars.outputs.DEPLOYMENT_VARS }}" | base64 --decode > /tmp/$GITHUB_WORKFLOW-$ENVIRONMENT.json && export $(cat /tmp/$GITHUB_WORKFLOW-$ENVIRONMENT.json | jq -r 'to_entries[] | "\(.key)=\(.value)"' | xargs)
+
+    - name: Login to AWS ECR
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v1
+
+    - name: Build and Push Image
+      id: build-and-push
       env:
-        DATABASE_URL: "${{ env.PRODUCTION_DB_URL }}"
+        REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        TAG: latest
       run: |
-        echo $DATABASE_URL
-        fab deploy_to_production
+        docker build -t $REGISTRY/group3/app:$TAG .
+        docker push $REGISTRY/group3/app:$TAG
+
+    - name: Deploy to Fargate
+      env:
+        CLUSTER: my-cluster
+        SERVICE: my-service
+        REGION: us-east-1
+        TASK_DEFINITION: group3/app:${{ env.TAG }}
+      run: |
+        ecs deploy --cluster $CLUSTER --service $SERVICE --region $REGION --task-definition $TASK_DEFINITION
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
