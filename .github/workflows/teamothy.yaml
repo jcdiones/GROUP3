@@ -2,9 +2,8 @@ name: Python CI
 
 on:
   push:
-    paths:
-      - '**.py'
-      - 'requirements.txt'
+    branches:
+      - master
 
 jobs:
   build:
@@ -24,6 +23,18 @@ jobs:
         python -m pip install --upgrade pip
         if [[ -f requirements.txt ]]; then pip install -r requirements.txt; fi
 
+    - name: Lint code
+      run: |
+        # Install linting tools
+        python -m pip install flake8
+
+        # Perform linting check
+        flake8 . --count --exit-zero --max-complexity=10 --statistics --verbose
+
     - name: Run tests
       run: |
-        python -m unittest discover -s tests -p "*_test.py"
+        # Install testing framework
+        python -m pip install pytest
+
+        # Run tests
+        pytest
