@@ -18,7 +18,7 @@ def decrypt_data(encrypted_data):
     return cipher_suite.decrypt(encrypted_data.encode()).decode()
 
 # Check if the database file exists
-DATABASE_FILE = "user_database.db"
+#DATABASE_FILE = "user_database.db"
 if not os.path.exists(DATABASE_FILE):
     # Create a new database file if it doesn't exist
     conn = sqlite3.connect(DATABASE_FILE)
