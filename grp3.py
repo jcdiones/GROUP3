@@ -32,7 +32,7 @@ if not os.path.exists(DATABASE_FILE):
     conn.close()
 
 # Define login function
-def login():
+def pytest_login():
     global authenticated
     username = username_entry.get()
     password = password_entry.get()
@@ -62,7 +62,7 @@ def login():
             update_label("Too many failed attempts. Please try again later.")
             time.sleep(60)  # Sleep for 60 seconds before allowing another attempt
 
-def authenticate(username, password):
+def pytest_authenticate(username, password):
     conn = sqlite3.connect(DATABASE_FILE)
     c = conn.cursor()
     c.execute("SELECT * FROM user WHERE username=? AND password=?", (username, password))
@@ -70,7 +70,7 @@ def authenticate(username, password):
     conn.close()
     return result is not None
 
-def logout():
+def pytest_logout():
     global authenticated
     authenticated = False
     login_button.config(state=tk.NORMAL)
