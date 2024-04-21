@@ -1,3 +1,4 @@
 flake8
 pytest
 cryptography
+pip install pyvirtualdisplay
