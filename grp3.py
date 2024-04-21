@@ -4,6 +4,7 @@ import socket
 import tkinter as tk
 import time
 from cryptography.fernet import Fernet
+from pyvirtualdisplay import Display
 
 # Generate a key for encryption
 key = Fernet.generate_key()
@@ -67,6 +68,10 @@ if not os.path.exists(DATABASE_FILE):
     conn.commit()
     conn.close()
 
+# Create a virtual display
+display = Display(visible=0, size=(800, 600))
+display.start()
+
 # Create the main window
 root = tk.Tk()
 root.title("Local IP Information")
@@ -98,3 +103,6 @@ get_ip_button.pack()
 
 # Start the event loop to display the UI
 root.mainloop()
+
+# Stop the virtual display
+display.stop()
