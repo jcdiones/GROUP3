@@ -4,7 +4,6 @@ import socket
 import tkinter as tk
 import time
 from cryptography.fernet import Fernet
-from pyvirtualdisplay import Display
 
 # Generate a key for encryption
 key = Fernet.generate_key()
@@ -18,10 +17,6 @@ def encrypt_data(data):
 def decrypt_data(encrypted_data):
     return cipher_suite.decrypt(encrypted_data.encode()).decode()
 
-# Define update_label function (assuming it's a function to update a label widget)
-def update_label(text):
-    ip_label.config(text=text)
-
 # Define authenticate function (assuming it's a function to authenticate users)
 def authenticate(username, password):
     # Code for authentication goes here
@@ -29,7 +24,7 @@ def authenticate(username, password):
     return True
 
 # Define login function
-def test_login():
+def login():
     username = username_entry.get()
     password = password_entry.get()
     if authenticate(username, password):
@@ -43,14 +38,14 @@ def test_login():
         update_label("Incorrect username or password")
 
 # Define logout function
-def test_logout():
+def logout():
     login_button.config(state=tk.NORMAL)
     logout_button.config(state=tk.DISABLED)
     get_ip_button.config(state=tk.DISABLED)
     update_label("Please log in to view IP")
 
 # Define get_local_ip function
-def test_get_local_ip():
+def get_local_ip():
     ip_address = socket.gethostbyname(socket.gethostname())
     update_label(f"Local IP Address: {ip_address}")
 
@@ -67,10 +62,6 @@ if not os.path.exists(DATABASE_FILE):
     c.execute("INSERT INTO user (username, password) VALUES (?, ?)", ("admin", "ciscoenpa"))
     conn.commit()
     conn.close()
-
-# Create a virtual display
-display = Display(visible=0, size=(800, 600))
-display.start()
 
 # Create the main window
 root = tk.Tk()
@@ -103,6 +94,3 @@ get_ip_button.pack()
 
 # Start the event loop to display the UI
 root.mainloop()
-
-# Stop the virtual display
-display.stop()
