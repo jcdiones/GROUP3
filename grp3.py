@@ -17,6 +17,10 @@ def encrypt_data(data):
 def decrypt_data(encrypted_data):
     return cipher_suite.decrypt(encrypted_data.encode()).decode()
 
+# Define update_label function (assuming it's a function to update a label widget)
+def update_label(text):
+    ip_label.config(text=text)
+
 # Define authenticate function (assuming it's a function to authenticate users)
 def authenticate(username, password):
     # Code for authentication goes here
