@@ -29,7 +29,7 @@ def authenticate(username, password):
     return True
 
 # Define login function
-def login():
+def test_login():
     username = username_entry.get()
     password = password_entry.get()
     if authenticate(username, password):
@@ -43,14 +43,14 @@ def login():
         update_label("Incorrect username or password")
 
 # Define logout function
-def logout():
+def test_logout():
     login_button.config(state=tk.NORMAL)
     logout_button.config(state=tk.DISABLED)
     get_ip_button.config(state=tk.DISABLED)
     update_label("Please log in to view IP")
 
 # Define get_local_ip function
-def get_local_ip():
+def test_get_local_ip():
     ip_address = socket.gethostbyname(socket.gethostname())
     update_label(f"Local IP Address: {ip_address}")
 
